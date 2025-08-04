@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Парсер рейтинга ИТМО</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f9fc;
+            color: #1a237e;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a237e, #303f9f);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px dashed #5c6bc0;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #5c6bc0, #3949ab);
+            color: white;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-input-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(92, 107, 192, 0.4);
+        }
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #5c6bc0;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            margin-bottom: 10px;
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a237e;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #c5cae9;
+            border-radius: 8px;
+            background-color: #e8eaf6;
+            font-size: 1rem;
+        }
+        .status-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            border: 1px solid #e8eaf6;
+        }
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1a237e;
+        }
+        .status-label {
+            font-size: 1rem;
+            color: #5c6bc0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        th {
+            background: linear-gradient(135deg, #3949ab, #1a237e);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            font-weight: 600;
+        }
+        th:hover {
+            background: linear-gradient(135deg, #3f51b5, #283593);
+        }
+        th::after {
+            content: "↕";
+            position: absolute;
+            right: 15px;
+            opacity: 0.8;
+        }
+        th.asc::after {
+            content: "↑";
+        }
+        th.desc::after {
+            content: "↓";
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e8eaf6;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f8ff;
+        }
+        tr:hover {
+            background-color: #e8eaf6;
+        }
+        .agreement-yes {
+            color: #2e7d32;
+            font-weight: bold;
+            background: #e8f5e9;
+            border-radius: 15px;
+            padding: 3px 10px;
+            display: inline-block;
+        }
+        .agreement-no {
+            color: #c62828;
+            font-weight: bold;
+            background: #ffebee;
+            border-radius: 15px;
+            padding: 3px 10px;
+            display: inline-block;
+        }
+        .priority-high {
+            background: #ffebee;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 15px;
+            padding: 3px 10px;
+            color: #c62828;
+        }
+        .priority-normal {
+            text-align: center;
+            background: #e8f5e9;
+            border-radius: 15px;
+            padding: 3px 10px;
+            color: #2e7d32;
+        }
+        .results-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            min-height: 400px;
+        }
+        .results-info {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1rem;
+            color: #5c6bc0;
+            padding: 10px;
+            background: #e8eaf6;
+            border-radius: 8px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #5c6bc0;
+            font-size: 1.2rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+        .spinner {
+            border: 4px solid #e8eaf6;
+            border-top: 4px solid #3949ab;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Парсер рейтинга абитуриентов ИТМО</h1>
+        <p>Загрузите HTML-файл с сайта для анализа</p>
+    </div>
+
+    <div class="upload-section">
+        <h2>Загрузите HTML-файл с данными</h2>
+        <p>Скачайте страницу с рейтингом с сайта ИТМО и загрузите файл здесь</p>
+        
+        <div class="file-input-wrapper">
+            <label class="file-input-label">Выбрать файл</label>
+            <input type="file" id="htmlFile" accept=".html">
+        </div>
+        <div class="file-name" id="fileName">Файл не выбран</div>
+        <div id="fileHelp">Как получить файл: 
+            <ol style="display: inline-block; text-align: left; margin-top: 10px;">
+                <li>На странице рейтинга нажмите Ctrl+S (Сохранить страницу)</li>
+                <li>Выберите "Веб-страница, полностью"</li>
+                <li>Загрузите сохраненный HTML-файл</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label for="priorityFilter">Приоритет:</label>
+            <select id="priorityFilter">
+                <option value="">Все приоритеты</option>
+                <option value="1">1 (высший)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="agreementFilter">Согласие:</label>
+            <select id="agreementFilter">
+                <option value="">Все</option>
+                <option value="да">Есть согласие</option>
+                <option value="нет">Нет согласия</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="search">Поиск по номеру:</label>
+            <input type="text" id="search" placeholder="Введите номер...">
+        </div>
+        
+        <div class="filter-group">
+            <label for="testTypeFilter">Вид испытания:</label>
+            <select id="testTypeFilter">
+                <option value="">Все</option>
+                <option value="Призер">Призер Я-профессионал</option>
+                <option value="Конкурс">Конкурс Портфолио</option>
+                <option value="РОП">РОП</option>
+                <option value="Медалист">Медалист/победитель</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="status-container">
+        <div class="status-item">
+            <div class="status-value" id="totalCount">0</div>
+            <div class="status-label">Всего заявлений</div>
+        </div>
+        <div class="status-item">
+            <div class="status-value" id="agreementCount">0</div>
+            <div class="status-label">С согласием</div>
+        </div>
+        <div class="status-item">
+            <div class="status-value" id="priority1Count">0</div>
+            <div class="status-label">Приоритет 1</div>
+        </div>
+    </div>
+    
+    <div class="results-container">
+        <div id="results">
+            <p class="no-data">Загрузите файл для просмотра данных</p>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let allData = [];
+        let sortColumn = null;
+        let sortDirection = 'asc';
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            // Обработчик загрузки файла
+            document.getElementById('htmlFile').addEventListener('change', handleFileUpload);
+            
+            // Настройка фильтров
+            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+            document.getElementById('agreementFilter').addEventListener('change', applyFilters);
+            document.getElementById('testTypeFilter').addEventListener('change', applyFilters);
+            document.getElementById('search').addEventListener('input', applyFilters);
+        });
+        
+        // Обработка загрузки файла
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Показать имя файла
+            document.getElementById('fileName').textContent = file.name;
+            
+            // Показать индикатор загрузки
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Обработка файла...</p>
+                </div>
+            `;
+            
+            // Чтение файла
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    parseHTML(e.target.result);
+                    applyFilters();
+                } catch (error) {
+                    document.getElementById('results').innerHTML = `
+                        <div style="color: #c62828; text-align: center; padding: 30px;">
+                            <h3>Ошибка обработки файла</h3>
+                            <p>${error.message}</p>
+                            <p>Убедитесь, что вы загрузили правильный файл с сайта ИТМО</p>
+                        </div>
+                    `;
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Парсинг HTML
+        function parseHTML(htmlContent) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            
+            // Находим контейнер с данными
+            const container = doc.querySelector('#__next > div > main > div.Background_background__im0jM.full-width.contain.flow.Background_white___i48e > div > div > div > div.RatingPage_table__FbzTn');
+            if (!container) {
+                throw new Error('Не удалось найти контейнер с данными. Убедитесь, что вы загрузили правильную страницу.');
+            }
+            
+            // Находим все элементы с данными
+            const items = container.querySelectorAll('.RatingPage_table__item__qMY0F');
+            if (items.length === 0) {
+                throw new Error('Не найдены данные абитуриентов. Возможно, структура страницы изменилась.');
+            }
+            
+            allData = [];
+            
+            items.forEach(item => {
+                try {
+                    // Извлекаем номер заявления
+                    const idElem = item.querySelector('.RatingPage_table__position__uYWvi span');
+                    if (!idElem) return;
+                    
+                    const record = {
+                        id: idElem.textContent.trim(),
+                        priority: '',
+                        testType: '',
+                        achievement: '',
+                        score: '',
+                        total: '',
+                        avg: '',
+                        mainPriority: '',
+                        passingPriority: '',
+                        agreement: ''
+                    };
+                    
+                    // Извлекаем блоки с информацией
+                    const infoBlocks = item.querySelectorAll('.RatingPage_table__info__quwhV');
+                    
+                    // Первый блок: Приоритет и Вид испытания
+                    if (infoBlocks.length > 0) {
+                        const firstBlock = infoBlocks[0];
+                        const paragraphs = firstBlock.querySelectorAll('p');
+                        
+                        paragraphs.forEach(p => {
+                            const text = p.textContent.trim();
+                            if (text.includes('Приоритет:')) {
+                                record.priority = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Вид испытания:')) {
+                                record.testType = p.querySelector('span').textContent.trim();
+                            }
+                        });
+                    }
+                    
+                    // Второй блок: Баллы
+                    if (infoBlocks.length > 1) {
+                        const secondBlock = infoBlocks[1];
+                        const paragraphs = secondBlock.querySelectorAll('p');
+                        
+                        paragraphs.forEach(p => {
+                            const text = p.textContent.trim();
+                            if (text.includes('ИД:')) {
+                                record.achievement = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Балл ВИ:')) {
+                                record.score = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Балл ВИ+ИД:')) {
+                                record.total = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Средний балл:')) {
+                                record.avg = p.querySelector('span').textContent.trim();
+                            }
+                        });
+                    }
+                    
+                    // Третий блок: Приоритеты и согласие
+                    if (infoBlocks.length > 2) {
+                        const thirdBlock = infoBlocks[2];
+                        const paragraphs = thirdBlock.querySelectorAll('p');
+                        
+                        paragraphs.forEach(p => {
+                            const text = p.textContent.trim();
+                            if (text.includes('Основной высший приоритет:')) {
+                                record.mainPriority = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Высший проходной приоритет:')) {
+                                record.passingPriority = p.querySelector('span').textContent.trim();
+                            } else if (text.includes('Есть согласие:')) {
+                                record.agreement = p.querySelector('span').textContent.trim();
+                            }
+                        });
+                    }
+                    
+                    // Добавляем запись, если есть ID
+                    if (record.id) allData.push(record);
+                } catch (error) {
+                    console.error('Ошибка парсинга элемента:', error);
+                }
+            });
+            
+            if (allData.length === 0) {
+                throw new Error('Не удалось извлечь данные. Проверьте формат файла.');
+            }
+            
+            // Обновляем статистику
+            updateStats();
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allData.length;
+            
+            const withAgreement = allData.filter(item => item.agreement === 'да').length;
+            document.getElementById('agreementCount').textContent = withAgreement;
+            
+            const priority1 = allData.filter(item => item.priority === '1').length;
+            document.getElementById('priority1Count').textContent = priority1;
+        }
+        
+        // Применение фильтров и сортировки
+        function applyFilters() {
+            if (allData.length === 0) return;
+            
+            // Получаем значения фильтров
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const agreementFilter = document.getElementById('agreementFilter').value;
+            const testTypeFilter = document.getElementById('testTypeFilter').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            
+            // Фильтрация данных
+            let filteredData = allData.filter(item => {
+                const matchesPriority = !priorityFilter || item.priority === priorityFilter;
+                const matchesAgreement = !agreementFilter || item.agreement === agreementFilter;
+                const matchesTestType = !testTypeFilter || item.testType.includes(testTypeFilter);
+                const matchesSearch = !searchTerm || 
+                    item.id.toLowerCase().includes(searchTerm) || 
+                    item.testType.toLowerCase().includes(searchTerm);
+                
+                return matchesPriority && matchesAgreement && matchesTestType && matchesSearch;
+            });
+            
+            // Сортировка
+            if (sortColumn) {
+                filteredData.sort((a, b) => {
+                    let valA = a[sortColumn];
+                    let valB = b[sortColumn];
+                    
+                    // Для числовых полей
+                    if (['priority', 'achievement', 'score', 'total', 'avg'].includes(sortColumn)) {
+                        valA = parseFloat(valA) || 0;
+                        valB = parseFloat(valB) || 0;
+                        return sortDirection === 'asc' ? valA - valB : valB - valA;
+                    }
+                    
+                    // Для текстовых полей
+                    return sortDirection === 'asc' 
+                        ? valA.localeCompare(valB) 
+                        : valB.localeCompare(valA);
+                });
+            }
+            
+            // Рендерим результаты
+            renderResults(filteredData);
+        }
+        
+        // Рендеринг таблицы с результатами
+        function renderResults(data) {
+            if (data.length === 0) {
+                document.getElementById('results').innerHTML = '<p class="no-data">Нет данных, соответствующих фильтрам</p>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th onclick="sortBy('id')">№ заявления</th>
+                            <th onclick="sortBy('priority')">Приоритет</th>
+                            <th onclick="sortBy('testType')">Вид испытания</th>
+                            <th onclick="sortBy('achievement')">ИД</th>
+                            <th onclick="sortBy('score')">Балл ВИ</th>
+                            <th onclick="sortBy('total')">Балл ВИ+ИД</th>
+                            <th onclick="sortBy('avg')">Средний балл</th>
+                            <th onclick="sortBy('agreement')">Согласие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            let i = 1
+            data.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td>${i}</td>
+                        <td>${item.id}</td>
+                        <td class="${item.priority === '1' ? 'priority-high' : 'priority-normal'}">${item.priority}</td>
+                        <td>${item.testType}</td>
+                        <td>${item.achievement}</td>
+                        <td>${item.score}</td>
+                        <td><strong>${item.total}</strong></td>
+                        <td>${item.avg}</td>
+                        <td><span class="${item.agreement === 'да' ? 'agreement-yes' : 'agreement-no'}">${item.agreement}</span></td>
+                    </tr>
+                `;
+                i++;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>
+            `;
+            
+            document.getElementById('results').innerHTML = tableHTML;
+        }
+        
+        // Сортировка по колонке
+        function sortBy(column) {
+            // Если уже сортировали по этой колонке - меняем направление
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            // Обновляем данные
+            applyFilters();
+        }
+        
+        // Добавляем функции в глобальную область видимости
+        window.sortBy = sortBy;
+        window.applyFilters = applyFilters;
+    </script>
+</body>
+</html>
