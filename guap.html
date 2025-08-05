@@ -271,6 +271,40 @@
             margin-top: 20px;
             font-size: 0.9rem;
         }
+        /* Стили для разделителя количества мест */
+        .places-separator {
+            position: relative;
+        }
+        .places-separator::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ff0000 20%, #ff0000 80%, transparent);
+            z-index: 10;
+        }
+        .places-label {
+            position: absolute;
+            right: 10px;
+            top: -10px;
+            background: #ff0000;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .places-info {
+            background: #fff8f8;
+            border-left: 4px solid #ff0000;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -371,6 +405,8 @@
         let allData = [];
         let sortColumn = null;
         let sortDirection = 'asc';
+        let placesCount = 0;
+        let placesText = "";
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
@@ -464,6 +500,25 @@
                 throw new Error('Не найдена строка с заголовками таблицы.');
             }
             
+            // Поиск информации о количестве мест
+            placesCount = 0;
+            placesText = "";
+            const placesElements = doc.querySelectorAll('h3');
+            for (const element of placesElements) {
+                
+                const text = element.textContent.toLowerCase();
+                if (text.includes('количество мест')) {
+                    placesText = element.textContent.trim();
+                    
+                    // Извлекаем число из текста
+                    const match = placesText.match(/\d+/);
+                    if (match) {
+                        placesCount = parseInt(match[0]);
+                    }
+                    break;
+                }
+            }
+            
             // Обрабатываем строки данных
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
@@ -513,7 +568,8 @@
                 const matchesPriority = !priorityFilter || item['Приоритет'] === priorityFilter;
                 const matchesContract = !contractFilter || item['Наличие заключенного договора'] === contractFilter;
                 const matchesSearch = !searchTerm || 
-                    item['Уникальный код поступающего'].toLowerCase().includes(searchTerm);
+                    (item['Уникальный код поступающего'] && 
+                     item['Уникальный код поступающего'].toLowerCase().includes(searchTerm));
                 const matchesScore = minScore === 0 || 
                     (item['Сумма баллов ВИ'] && parseInt(item['Сумма баллов ВИ']) >= minScore) ||
                     (item['Балл за испытание'] && parseInt(item['Балл за испытание']) >= minScore);
@@ -554,6 +610,7 @@
             }
             
             let tableHTML = `
+                <div class="table-container">
                 <table>
                     <thead>
                         <tr>
@@ -570,14 +627,21 @@
                     <tbody>
             `;
             
-            data.forEach(item => {
+            // Определяем позицию для разделителя
+            const separatorPosition = Math.min(placesCount, data.length);
+            
+            data.forEach((item, index) => {
                 const priority = item['Приоритет'] || '';
                 const contract = item['Наличие заключенного договора'] || '';
                 const testScore = item['Балл за испытание'] || '';
+                const rowNumber = item['п/п'] || '';
+                
+                // Добавляем разделитель количества мест
+                const isSeparatorRow = index === separatorPosition - 1;
                 
                 tableHTML += `
-                    <tr>
-                        <td>${item['п/п'] || ''}</td>
+                    <tr ${isSeparatorRow ? 'class="places-separator"' : ''}>
+                        <td>${rowNumber}</td>
                         <td>${item['Уникальный код поступающего'] || ''}</td>
                         <td class="${priority <= 3 ? 'priority-high' : 'priority-low'}">${priority}</td>
                         <td>${item['Сумма конкурсных баллов'] || ''}</td>
@@ -587,15 +651,34 @@
                         <td><span class="${contract === 'Да' ? 'contract-yes' : 'contract-no'}">${contract}</span></td>
                     </tr>
                 `;
+                
+                // Добавляем метку количества мест
+                if (isSeparatorRow) {
+                    tableHTML += `
+                        <tr>
+                            <td colspan="8" style="position: relative; height: 10px;">
+                                <div class="places-label">${placesText || `Количество мест: ${placesCount}`}</div>
+                            </td>
+                        </tr>
+                    `;
+                }
             });
             
             tableHTML += `
                     </tbody>
                 </table>
-                <div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>
+                </div>
             `;
             
-            document.getElementById('results').innerHTML = tableHTML;
+            // Добавляем информацию о количестве мест
+            let infoHTML = '';
+            if (placesText) {
+                infoHTML = `<div class="places-info"><strong>Обнаружено:</strong> ${placesText}</div>`;
+            }
+            
+            infoHTML += `<div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>`;
+            
+            document.getElementById('results').innerHTML = tableHTML + infoHTML;
         }
         
         // Сортировка по колонке
