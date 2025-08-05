@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Парсер таблицы рейтинга</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #4a6582);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border: 2px dashed #ced4da;
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background: white;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 0 5px 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4a6582, #2c3e50);
+            color: white;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-input-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+        }
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #4a6582;
+        }
+        button {
+            background: linear-gradient(135deg, #4a6582, #2c3e50);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            margin-bottom: 10px;
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            font-size: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        th {
+            background: linear-gradient(135deg, #3d5a80, #2c3e50);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            font-weight: 600;
+        }
+        th:hover {
+            background: linear-gradient(135deg, #4a6582, #3d5a80);
+        }
+        th::after {
+            content: "↕";
+            position: absolute;
+            right: 15px;
+            opacity: 0.8;
+        }
+        th.asc::after {
+            content: "↑";
+        }
+        th.desc::after {
+            content: "↓";
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+        .priority-high {
+            background: #e3f2fd;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 15px;
+            padding: 3px 10px;
+            color: #0d47a1;
+        }
+        .priority-low {
+            text-align: center;
+            background: #ffebee;
+            border-radius: 15px;
+            padding: 3px 10px;
+            color: #c62828;
+        }
+        .contract-yes {
+            color: #2e7d32;
+            font-weight: bold;
+            background: #e8f5e9;
+            border-radius: 15px;
+            padding: 3px 10px;
+            display: inline-block;
+        }
+        .contract-no {
+            color: #c62828;
+            font-weight: bold;
+            background: #ffebee;
+            border-radius: 15px;
+            padding: 3px 10px;
+            display: inline-block;
+        }
+        .results-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            min-height: 400px;
+        }
+        .results-info {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1rem;
+            color: #4a6582;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3d5a80;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .instructions {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Парсер таблицы рейтинга абитуриентов</h1>
+        <p>Загрузите HTML-файл или вставьте HTML-код таблицы для анализа</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="file">Загрузить файл</div>
+        <div class="tab" data-tab="html">Вставить HTML</div>
+    </div>
+
+    <div class="tab-content active" id="file-tab">
+        <div class="upload-section">
+            <h2>Загрузите HTML-файл с таблицей</h2>
+            
+            <div class="file-input-wrapper">
+                <label class="file-input-label">Выбрать файл HTML</label>
+                <input type="file" id="htmlFile" accept=".html">
+            </div>
+            <div class="file-name" id="fileName">Файл не выбран</div>
+            
+            <div class="instructions">
+                <h3>Как получить файл:</h3>
+                <p>1. Откройте страницу с таблицей рейтинга</p>
+                <p>2. Нажмите Ctrl+S (Сохранить страницу)</p>
+                <p>3. Выберите "Веб-страница, полностью"</p>
+                <p>4. Загрузите сохраненный HTML-файл</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="html-tab">
+        <div class="upload-section">
+            <h2>Вставьте HTML-код таблицы</h2>
+            
+            <textarea id="htmlInput" placeholder="Вставьте HTML код таблицы сюда..."></textarea>
+            <button onclick="parseHTMLContent()">Обработать HTML</button>
+            
+            <div class="instructions">
+                <h3>Как получить HTML:</h3>
+                <p>1. Откройте страницу с таблицей в браузере</p>
+                <p>2. Кликните правой кнопкой по таблице</p>
+                <p>3. Выберите "Исследовать элемент" (Inspect)</p>
+                <p>4. Скопируйте код таблицы (элемент &lt;table&gt;...&lt;/table&gt;)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label for="priorityFilter">Приоритет:</label>
+            <select id="priorityFilter">
+                <option value="">Все приоритеты</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="contractFilter">Договор:</label>
+            <select id="contractFilter">
+                <option value="">Все</option>
+                <option value="Да">Есть договор</option>
+                <option value="Нет">Нет договора</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="search">Поиск по коду:</label>
+            <input type="text" id="search" placeholder="Введите код...">
+        </div>
+        
+        <div class="filter-group">
+            <label for="scoreFilter">Баллы ВИ (мин):</label>
+            <input type="number" id="scoreFilter" placeholder="Минимальный балл">
+        </div>
+    </div>
+    
+    <div class="results-container">
+        <div id="results">
+            <p class="no-data">Загрузите данные для просмотра таблицы</p>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let allData = [];
+        let sortColumn = null;
+        let sortDirection = 'asc';
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            // Переключение вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // Обработчик загрузки файла
+            document.getElementById('htmlFile').addEventListener('change', handleFileUpload);
+            
+            // Настройка фильтров
+            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+            document.getElementById('contractFilter').addEventListener('change', applyFilters);
+            document.getElementById('search').addEventListener('input', applyFilters);
+            document.getElementById('scoreFilter').addEventListener('input', applyFilters);
+        });
+        
+        // Обработка загрузки файла
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Показать имя файла
+            document.getElementById('fileName').textContent = file.name;
+            
+            // Показать индикатор загрузки
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Обработка файла...</p>
+                </div>
+            `;
+            
+            // Чтение файла
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    parseHTML(e.target.result);
+                    applyFilters();
+                } catch (error) {
+                    showError(`Ошибка обработки файла: ${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Парсинг HTML-контента
+        function parseHTMLContent() {
+            const htmlInput = document.getElementById('htmlInput').value;
+            if (!htmlInput.trim()) {
+                showError('Пожалуйста, вставьте HTML код таблицы');
+                return;
+            }
+            
+            try {
+                parseHTML(htmlInput);
+                applyFilters();
+            } catch (error) {
+                showError(`Ошибка обработки HTML: ${error.message}`);
+            }
+        }
+        
+        // Парсинг HTML
+        function parseHTML(htmlContent) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            
+            // Находим таблицу
+            const table = doc.querySelector('table');
+            if (!table) {
+                throw new Error('Не найдена таблица в загруженных данных.');
+            }
+            
+            allData = [];
+            const headers = [];
+            
+            // Получаем заголовки
+            const headerRow = table.querySelector('thead tr');
+            if (headerRow) {
+                headerRow.querySelectorAll('th').forEach(th => {
+                    headers.push(th.textContent.trim());
+                });
+            } else {
+                throw new Error('Не найдена строка с заголовками таблицы.');
+            }
+            
+            // Обрабатываем строки данных
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const rowData = {};
+                const cells = row.querySelectorAll('td');
+                
+                cells.forEach((cell, index) => {
+                    if (index < headers.length) {
+                        rowData[headers[index]] = cell.textContent.trim();
+                    }
+                });
+                
+                // Обработка колонки с баллами
+                if (headers.includes('Баллы за каждое вступительное испытание (в порядке приоритетности)')) {
+                    const testInfo = rowData['Баллы за каждое вступительное испытание (в порядке приоритетности)'];
+                    if (testInfo) {
+                        const matches = testInfo.match(/(\d+)$/);
+                        if (matches) {
+                            rowData['Балл за испытание'] = matches[1];
+                        }
+                    }
+                }
+                
+                allData.push(rowData);
+            });
+            
+            if (allData.length === 0) {
+                throw new Error('Не удалось извлечь данные из таблицы.');
+            }
+            
+            // Обновляем интерфейс
+            applyFilters();
+        }
+        
+        // Применение фильтров и сортировки
+        function applyFilters() {
+            if (allData.length === 0) return;
+            
+            // Получаем значения фильтров
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const contractFilter = document.getElementById('contractFilter').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const minScore = parseInt(document.getElementById('scoreFilter').value) || 0;
+            
+            // Фильтрация данных
+            let filteredData = allData.filter(item => {
+                const matchesPriority = !priorityFilter || item['Приоритет'] === priorityFilter;
+                const matchesContract = !contractFilter || item['Наличие заключенного договора'] === contractFilter;
+                const matchesSearch = !searchTerm || 
+                    item['Уникальный код поступающего'].toLowerCase().includes(searchTerm);
+                const matchesScore = minScore === 0 || 
+                    (item['Сумма баллов ВИ'] && parseInt(item['Сумма баллов ВИ']) >= minScore) ||
+                    (item['Балл за испытание'] && parseInt(item['Балл за испытание']) >= minScore);
+                
+                return matchesPriority && matchesContract && matchesSearch && matchesScore;
+            });
+            
+            // Сортировка
+            if (sortColumn) {
+                filteredData.sort((a, b) => {
+                    let valA = a[sortColumn];
+                    let valB = b[sortColumn];
+                    
+                    // Для числовых полей
+                    if (['п/п', 'Приоритет', 'Сумма конкурсных баллов', 'Сумма баллов ВИ', 
+                         'Баллы за достижения', 'Балл за испытание'].includes(sortColumn)) {
+                        valA = parseFloat(valA) || 0;
+                        valB = parseFloat(valB) || 0;
+                        return sortDirection === 'asc' ? valA - valB : valB - valA;
+                    }
+                    
+                    // Для текстовых полей
+                    return sortDirection === 'asc' 
+                        ? valA.localeCompare(valB) 
+                        : valB.localeCompare(valA);
+                });
+            }
+            
+            // Рендерим результаты
+            renderResults(filteredData);
+        }
+        
+        // Рендеринг таблицы с результатами
+        function renderResults(data) {
+            if (data.length === 0) {
+                document.getElementById('results').innerHTML = '<p class="no-data">Нет данных, соответствующих фильтрам</p>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th onclick="sortBy('п/п')">№</th>
+                            <th onclick="sortBy('Уникальный код поступающего')">Код</th>
+                            <th onclick="sortBy('Приоритет')">Приоритет</th>
+                            <th onclick="sortBy('Сумма конкурсных баллов')">Сумма баллов</th>
+                            <th onclick="sortBy('Сумма баллов ВИ')">Баллы ВИ</th>
+                            <th onclick="sortBy('Баллы за достижения')">Достижения</th>
+                            <th>Вступительное испытание</th>
+                            <th onclick="sortBy('Наличие заключенного договора')">Договор</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.forEach(item => {
+                const priority = item['Приоритет'] || '';
+                const contract = item['Наличие заключенного договора'] || '';
+                const testScore = item['Балл за испытание'] || '';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${item['п/п'] || ''}</td>
+                        <td>${item['Уникальный код поступающего'] || ''}</td>
+                        <td class="${priority <= 3 ? 'priority-high' : 'priority-low'}">${priority}</td>
+                        <td>${item['Сумма конкурсных баллов'] || ''}</td>
+                        <td>${item['Сумма баллов ВИ'] || ''}</td>
+                        <td>${item['Баллы за достижения'] || ''}</td>
+                        <td>${testScore ? `Балл: ${testScore}` : ''}</td>
+                        <td><span class="${contract === 'Да' ? 'contract-yes' : 'contract-no'}">${contract}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>
+            `;
+            
+            document.getElementById('results').innerHTML = tableHTML;
+        }
+        
+        // Сортировка по колонке
+        function sortBy(column) {
+            // Если уже сортировали по этой колонке - меняем направление
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            // Обновляем данные
+            applyFilters();
+        }
+        
+        // Показать ошибку
+        function showError(message) {
+            document.getElementById('results').innerHTML = `
+                <div style="color: #c62828; text-align: center; padding: 30px;">
+                    <h3>Ошибка</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // Добавляем функции в глобальную область видимости
+        window.sortBy = sortBy;
+        window.parseHTMLContent = parseHTMLContent;
+        window.applyFilters = applyFilters;
+    </script>
+</body>
+</html>
