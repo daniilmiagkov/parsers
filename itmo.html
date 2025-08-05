@@ -9,7 +9,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f9fc;
@@ -23,6 +23,38 @@
             color: white;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            transition: .2s;
+        }
+        .tab.active {
+            background: white;
+            font-weight: bold;
+            color: #1a237e;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 0 5px 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .tab-content.active {
+            display: block;
         }
         .upload-section {
             background: white;
@@ -92,6 +124,39 @@
             border-radius: 8px;
             background-color: #e8eaf6;
             font-size: 1rem;
+        }
+        .priority-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .priority-checkbox {
+            display: flex;
+            align-items: center;
+            background: #e8eaf6;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .priority-checkbox input {
+            margin-right: 5px;
+            width: auto;
+        }
+        .priority-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .priority-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #5c6bc0;
+            color: white;
+            font-weight: 600;
         }
         .status-container {
             display: grid;
@@ -227,6 +292,80 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
+        .direction-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .direction-tab {
+            padding: 10px 15px;
+            background: #e0e7ff;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: .2s;
+        }
+        .direction-tab.active {
+            background: #3d5a80;
+            color: white;
+            font-weight: bold;
+        }
+        .direction-tab-close {
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+        }
+        .direction-info {
+            background: #e8f4ff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .direction-name {
+            font-weight: bold;
+            color: #1a237e;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .places-label {
+            text-align: center;
+            font-weight: bold;
+            color: #ff0000;
+            margin: 4px 0;
+            padding: 5px;
+            background: #fff8f8;
+            border-radius: 5px;
+        }
+        .places-separator td {
+            border-bottom: 3px solid #ff0000;
+            padding-top: 8px;
+        }
+        .remove-direction {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            float: right;
+            cursor: pointer;
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -236,38 +375,83 @@
 <body>
     <div class="header">
         <h1>Парсер рейтинга абитуриентов ИТМО</h1>
-        <p>Загрузите HTML-файл с сайта для анализа</p>
+        <p>Загрузите несколько направлений для сравнения</p>
     </div>
 
-    <div class="upload-section">
-        <h2>Загрузите HTML-файл с данными</h2>
-        <p>Скачайте страницу с рейтингом с сайта ИТМО и загрузите файл здесь</p>
-        
-        <div class="file-input-wrapper">
-            <label class="file-input-label">Выбрать файл</label>
-            <input type="file" id="htmlFile" accept=".html">
-        </div>
-        <div class="file-name" id="fileName">Файл не выбран</div>
-        <div id="fileHelp">Как получить файл: 
-            <ol style="display: inline-block; text-align: left; margin-top: 10px;">
-                <li>На странице рейтинга нажмите Ctrl+S (Сохранить страницу)</li>
-                <li>Выберите "Веб-страница, полностью"</li>
-                <li>Загрузите сохраненный HTML-файл</li>
-            </ol>
+    <!-- Вкладки загрузки -->
+    <div class="tabs">
+        <div class="tab active" data-tab="file">Загрузить файлы</div>
+        <div class="tab" data-tab="html">Вставить HTML</div>
+    </div>
+
+    <!-- Контент вкладок -->
+    <div class="tab-content active" id="file-tab">
+        <div class="upload-section">
+            <h2>Загрузите HTML-файлы</h2>
+            <div class="file-input-wrapper">
+                <input
+                    type="file"
+                    id="htmlFiles"
+                    accept=".html"
+                    multiple
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
+                >
+                <label for="htmlFiles" class="file-input-label">Выбрать файлы HTML</label>
+            </div>
+            <div class="file-name" id="fileName">Файлы не выбраны</div>
+            <div id="fileHelp">
+                Как получить файл: 
+                <ol style="display: inline-block; text-align: left; margin-top: 10px;">
+                    <li>На странице рейтинга нажмите Ctrl+S (Сохранить страницу)</li>
+                    <li>Выберите "Веб-страница, полностью"</li>
+                    <li>Загрузите сохраненный HTML-файл</li>
+                </ol>
+            </div>
         </div>
     </div>
 
+    <div class="tab-content" id="html-tab">
+        <div class="upload-section">
+            <h2>Вставьте HTML-код</h2>
+            <textarea id="htmlInput" placeholder="Вставьте HTML код таблицы сюда..." style="width: 100%; height: 200px; padding: 15px; border: 1px solid #ced4da; border-radius: 5px; font-family: Consolas, monospace; font-size: 14px;"></textarea>
+            <button onclick="parseHTMLContent()" style="background: linear-gradient(135deg, #5c6bc0, #3949ab); color: white; border: none; padding: 12px 22px; border-radius: 30px; cursor: pointer; font-weight: 600; margin: 10px 0; transition: .3s;">Обработать HTML</button>
+        </div>
+    </div>
+
+    <!-- Вкладки направлений -->
+    <div class="direction-tabs" id="directionTabs"></div>
+
+    <!-- Фильтры -->
     <div class="filters">
         <div class="filter-group">
-            <label for="priorityFilter">Приоритет:</label>
-            <select id="priorityFilter">
-                <option value="">Все приоритеты</option>
-                <option value="1">1 (высший)</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </select>
+            <label>Приоритеты</label>
+            <div class="priority-checkboxes" id="priorityFilters">
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="1" checked> 1
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="2" checked> 2
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="3" checked> 3
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="4" checked> 4
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="5" checked> 5
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="6" checked> 6
+                </label>
+                <label class="priority-checkbox">
+                    <input type="checkbox" value="7" checked> 7
+                </label>
+            </div>
+            <div class="priority-actions">
+                <button onclick="toggleAllPriorities(true)">Выбрать все</button>
+                <button onclick="toggleAllPriorities(false)">Снять все</button>
+            </div>
         </div>
         
         <div class="filter-group">
@@ -296,6 +480,7 @@
         </div>
     </div>
     
+    <!-- Статистика -->
     <div class="status-container">
         <div class="status-item">
             <div class="status-value" id="totalCount">0</div>
@@ -311,6 +496,7 @@
         </div>
     </div>
     
+    <!-- Результаты -->
     <div class="results-container">
         <div id="results">
             <p class="no-data">Загрузите файл для просмотра данных</p>
@@ -319,76 +505,109 @@
 
     <script>
         // Глобальные переменные
-        let allData = [];
+        const directionsData = {};
+        let currentDirection = null;
         let sortColumn = null;
         let sortDirection = 'asc';
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
-            // Обработчик загрузки файла
-            document.getElementById('htmlFile').addEventListener('change', handleFileUpload);
+            // Обработчики вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+                });
+            });
             
-            // Настройка фильтров
-            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+            // Обработчики фильтров
+            document.getElementById('htmlFiles').addEventListener('change', handleFiles);
             document.getElementById('agreementFilter').addEventListener('change', applyFilters);
             document.getElementById('testTypeFilter').addEventListener('change', applyFilters);
             document.getElementById('search').addEventListener('input', applyFilters);
+            
+            // Обработчик чекбоксов приоритетов
+            document.getElementById('priorityFilters').addEventListener('change', applyFilters);
         });
         
-        // Обработка загрузки файла
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Обработка нескольких файлов
+        function handleFiles(event) {
+            const files = event.target.files;
+            if (!files.length) return;
             
-            // Показать имя файла
-            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileName').textContent = `${files.length} файл(ов)`;
+            document.getElementById('results').innerHTML = `<div class="loading"><div class="spinner"></div><p>Обработка файлов...</p></div>`;
             
-            // Показать индикатор загрузки
-            document.getElementById('results').innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Обработка файла...</p>
-                </div>
-            `;
-            
-            // Чтение файла
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    parseHTML(e.target.result);
-                    applyFilters();
-                } catch (error) {
-                    document.getElementById('results').innerHTML = `
-                        <div style="color: #c62828; text-align: center; padding: 30px;">
-                            <h3>Ошибка обработки файла</h3>
+            let processed = 0;
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        parseHTML(e.target.result, file.name);
+                    } catch (error) {
+                        console.error(`Ошибка обработки файла ${file.name}:`, error);
+                        document.getElementById('results').innerHTML = `<div style="color: #c62828; text-align: center; padding: 30px;">
+                            <h3>Ошибка обработки файла ${file.name}</h3>
                             <p>${error.message}</p>
-                            <p>Убедитесь, что вы загрузили правильный файл с сайта ИТМО</p>
-                        </div>
-                    `;
-                }
-            };
-            reader.readAsText(file);
+                        </div>`;
+                    } finally {
+                        processed++;
+                        if (processed === files.length) {
+                            const keys = Object.keys(directionsData);
+                            if (keys.length) {
+                                activateDirection(keys[0]);
+                                applyFilters();
+                            } else {
+                                document.getElementById('results').innerHTML = '<p class="no-data">Не удалось загрузить данные</p>';
+                            }
+                        }
+                    }
+                };
+                reader.readAsText(file);
+            }
         }
         
-        // Парсинг HTML
-        function parseHTML(htmlContent) {
+        // Парсинг HTML - ИСПРАВЛЕННЫЙ ВАРИАНТ
+        function parseHTML(htmlContent, fileName) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlContent, 'text/html');
             
             // Находим контейнер с данными
             const container = doc.querySelector('#__next > div > main > div.Background_background__im0jM.full-width.contain.flow.Background_white___i48e > div > div > div > div.RatingPage_table__FbzTn');
             if (!container) {
-                throw new Error('Не удалось найти контейнер с данными. Убедитесь, что вы загрузили правильную страницу.');
+                throw new Error('Не удалось найти контейнер с данными. Убедитесь, что вы загрузили правильную страницу ИТМО.');
             }
             
-            // Находим все элементы с данными
+            // Извлекаем название направления
+            let name = fileName;
+            const nameElem = doc.querySelector('h1');
+            if (nameElem) {
+                name = nameElem.textContent.trim();
+            }
+            
+            // Извлекаем количество мест
+            let placesText = 'Количество мест: не указано';
+            let placesCount = 0;
+            const placesElems = doc.querySelectorAll('p');
+            for (const elem of placesElems) {
+                const text = elem.textContent.trim();
+                if (text.includes('Количество мест')) {
+                    placesText = text;
+                    const match = text.match(/\d+/g);
+                    if (match) placesCount = parseInt(match[0]);
+                    break;
+                }
+            }
+            
+            // Извлекаем данные абитуриентов
             const items = container.querySelectorAll('.RatingPage_table__item__qMY0F');
             if (items.length === 0) {
                 throw new Error('Не найдены данные абитуриентов. Возможно, структура страницы изменилась.');
             }
             
-            allData = [];
-            
+            const applicants = [];
             items.forEach(item => {
                 try {
                     // Извлекаем номер заявления
@@ -403,121 +622,169 @@
                         score: '',
                         total: '',
                         avg: '',
-                        mainPriority: '',
-                        passingPriority: '',
                         agreement: ''
                     };
                     
-                    // Извлекаем блоки с информацией
+                    // ИСПРАВЛЕННЫЙ ПАРСИНГ ДАННЫХ
+                    // Обрабатываем все информационные блоки
                     const infoBlocks = item.querySelectorAll('.RatingPage_table__info__quwhV');
                     
-                    // Первый блок: Приоритет и Вид испытания
-                    if (infoBlocks.length > 0) {
-                        const firstBlock = infoBlocks[0];
-                        const paragraphs = firstBlock.querySelectorAll('p');
+                    // Перебираем все блоки для поиска нужной информации
+                    infoBlocks.forEach(block => {
+                        const paragraphs = block.querySelectorAll('p');
                         
                         paragraphs.forEach(p => {
                             const text = p.textContent.trim();
-                            if (text.includes('Приоритет:')) {
-                                record.priority = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Вид испытания:')) {
-                                record.testType = p.querySelector('span').textContent.trim();
+                            
+                            // Определяем тип данных по тексту
+                            if (text.startsWith('Приоритет:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.priority = span.textContent.trim();
+                            } 
+                            else if (text.startsWith('Вид испытания:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.testType = span.textContent.trim();
+                            } 
+                            else if (text.startsWith('ИД:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.achievement = span.textContent.trim();
+                            } 
+                            else if (text.startsWith('Балл ВИ:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.score = span.textContent.trim();
+                            } 
+                            else if (text.startsWith('Балл ВИ+ИД:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.total = span.textContent.trim();
+                            } 
+                            else if (text.includes('Средний балл:')) {
+                                const spans = p.querySelectorAll('span');
+                                if (spans.length > 0) {
+                                    // Берем последний span для среднего балла
+                                    record.avg = spans[spans.length - 1].textContent.trim();
+                                }
+                            } 
+                            else if (text.startsWith('Есть согласие:')) {
+                                const span = p.querySelector('span');
+                                if (span) record.agreement = span.textContent.trim().toLowerCase();
                             }
                         });
-                    }
+                    });
                     
-                    // Второй блок: Баллы
-                    if (infoBlocks.length > 1) {
-                        const secondBlock = infoBlocks[1];
-                        const paragraphs = secondBlock.querySelectorAll('p');
-                        
-                        paragraphs.forEach(p => {
-                            const text = p.textContent.trim();
-                            if (text.includes('ИД:')) {
-                                record.achievement = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Балл ВИ:')) {
-                                record.score = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Балл ВИ+ИД:')) {
-                                record.total = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Средний балл:')) {
-                                record.avg = p.querySelector('span').textContent.trim();
-                            }
-                        });
-                    }
-                    
-                    // Третий блок: Приоритеты и согласие
-                    if (infoBlocks.length > 2) {
-                        const thirdBlock = infoBlocks[2];
-                        const paragraphs = thirdBlock.querySelectorAll('p');
-                        
-                        paragraphs.forEach(p => {
-                            const text = p.textContent.trim();
-                            if (text.includes('Основной высший приоритет:')) {
-                                record.mainPriority = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Высший проходной приоритет:')) {
-                                record.passingPriority = p.querySelector('span').textContent.trim();
-                            } else if (text.includes('Есть согласие:')) {
-                                record.agreement = p.querySelector('span').textContent.trim();
-                            }
-                        });
-                    }
-                    
-                    // Добавляем запись, если есть ID
-                    if (record.id) allData.push(record);
+                    // Добавляем запись
+                    if (record.id) applicants.push(record);
                 } catch (error) {
                     console.error('Ошибка парсинга элемента:', error);
                 }
             });
             
-            if (allData.length === 0) {
-                throw new Error('Не удалось извлечь данные. Проверьте формат файла.');
+            if (applicants.length === 0) {
+                throw new Error('Не удалось извлечь данные абитуриентов. Проверьте формат файла.');
             }
             
-            // Обновляем статистику
-            updateStats();
+            // Сохраняем данные направления
+            const id = 'dir_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            directionsData[id] = {
+                id,
+                name,
+                applicants,
+                placesText,
+                placesCount,
+                fileName
+            };
+            
+            // Добавляем вкладку направления
+            addDirectionTab(id, name);
         }
         
-        // Обновление статистики
-        function updateStats() {
-            document.getElementById('totalCount').textContent = allData.length;
+        // Добавление вкладки направления
+        function addDirectionTab(id, name) {
+            const tab = document.createElement('div');
+            tab.className = 'direction-tab';
+            tab.dataset.id = id;
+            tab.innerHTML = `
+                <span>${name}</span>
+                <div class="direction-tab-close" onclick="removeDirection('${id}', event)">×</div>
+            `;
+            tab.addEventListener('click', () => activateDirection(id));
+            document.getElementById('directionTabs').appendChild(tab);
             
-            const withAgreement = allData.filter(item => item.agreement === 'да').length;
-            document.getElementById('agreementCount').textContent = withAgreement;
-            
-            const priority1 = allData.filter(item => item.priority === '1').length;
-            document.getElementById('priority1Count').textContent = priority1;
+            if (!currentDirection) {
+                activateDirection(id);
+            }
         }
         
-        // Применение фильтров и сортировки
+        // Активация направления
+        function activateDirection(id) {
+            currentDirection = id;
+            document.querySelectorAll('.direction-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.id === id);
+            });
+            applyFilters();
+        }
+        
+        // Удаление направления
+        function removeDirection(id, event) {
+            if (event) event.stopPropagation();
+            delete directionsData[id];
+            
+            const tab = document.querySelector(`.direction-tab[data-id="${id}"]`);
+            if (tab) tab.remove();
+            
+            if (currentDirection === id) {
+                const keys = Object.keys(directionsData);
+                if (keys.length > 0) {
+                    activateDirection(keys[0]);
+                } else {
+                    document.getElementById('results').innerHTML = '<p class="no-data">Нет загруженных направлений</p>';
+                    currentDirection = null;
+                }
+            }
+        }
+        
+        // Применение фильтров
         function applyFilters() {
-            if (allData.length === 0) return;
+            if (!currentDirection) {
+                document.getElementById('results').innerHTML = '<p class="no-data">Выберите направление</p>';
+                return;
+            }
+            
+            const direction = directionsData[currentDirection];
+            let applicants = [...direction.applicants];
             
             // Получаем значения фильтров
-            const priorityFilter = document.getElementById('priorityFilter').value;
             const agreementFilter = document.getElementById('agreementFilter').value;
             const testTypeFilter = document.getElementById('testTypeFilter').value;
             const searchTerm = document.getElementById('search').value.toLowerCase();
             
+            // Получаем выбранные приоритеты
+            const priorityCheckboxes = document.querySelectorAll('#priorityFilters input:checked');
+            const selectedPriorities = Array.from(priorityCheckboxes).map(cb => cb.value);
+            
             // Фильтрация данных
-            let filteredData = allData.filter(item => {
-                const matchesPriority = !priorityFilter || item.priority === priorityFilter;
-                const matchesAgreement = !agreementFilter || item.agreement === agreementFilter;
-                const matchesTestType = !testTypeFilter || item.testType.includes(testTypeFilter);
+            applicants = applicants.filter(applicant => {
+                // Фильтрация по приоритетам
+                const matchesPriority = selectedPriorities.length === 0 || 
+                                      selectedPriorities.includes(applicant.priority);
+                
+                const matchesAgreement = !agreementFilter || applicant.agreement === agreementFilter;
+                const matchesTestType = !testTypeFilter || applicant.testType.includes(testTypeFilter);
                 const matchesSearch = !searchTerm || 
-                    item.id.toLowerCase().includes(searchTerm) || 
-                    item.testType.toLowerCase().includes(searchTerm);
+                    applicant.id.toLowerCase().includes(searchTerm) || 
+                    applicant.testType.toLowerCase().includes(searchTerm);
                 
                 return matchesPriority && matchesAgreement && matchesTestType && matchesSearch;
             });
             
             // Сортировка
             if (sortColumn) {
-                filteredData.sort((a, b) => {
+                applicants.sort((a, b) => {
                     let valA = a[sortColumn];
                     let valB = b[sortColumn];
                     
                     // Для числовых полей
-                    if (['priority', 'achievement', 'score', 'total', 'avg'].includes(sortColumn)) {
+                    const numericFields = ['achievement', 'score', 'total', 'avg'];
+                    if (numericFields.includes(sortColumn)) {
                         valA = parseFloat(valA) || 0;
                         valB = parseFloat(valB) || 0;
                         return sortDirection === 'asc' ? valA - valB : valB - valA;
@@ -530,18 +797,42 @@
                 });
             }
             
-            // Рендерим результаты
-            renderResults(filteredData);
+            // Обновление статистики
+            updateStats(direction);
+            
+            // Рендеринг результатов
+            renderResults(applicants, direction);
         }
         
-        // Рендеринг таблицы с результатами
-        function renderResults(data) {
-            if (data.length === 0) {
+        // Обновление статистики
+        function updateStats(direction) {
+            document.getElementById('totalCount').textContent = direction.applicants.length;
+            
+            const withAgreement = direction.applicants.filter(a => a.agreement === 'да').length;
+            document.getElementById('agreementCount').textContent = withAgreement;
+            
+            const priority1 = direction.applicants.filter(a => a.priority === '1').length;
+            document.getElementById('priority1Count').textContent = priority1;
+        }
+        
+        // Рендеринг результатов
+        function renderResults(applicants, direction) {
+            if (applicants.length === 0) {
                 document.getElementById('results').innerHTML = '<p class="no-data">Нет данных, соответствующих фильтрам</p>';
                 return;
             }
             
+            // Определяем позицию сепаратора
+            const sepPos = Math.min(direction.placesCount || 0, applicants.length);
+            
             let tableHTML = `
+                <div class="direction-info">
+                    <span class="direction-name">${direction.name}</span>
+                    <button class="remove-direction" onclick="removeDirection('${direction.id}')">×</button>
+                    <div style="clear:both"></div>
+                    <div>${direction.placesText}</div>
+                    <div>Загружен из: ${direction.fileName}</div>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -558,28 +849,42 @@
                     </thead>
                     <tbody>
             `;
-            let i = 1
-            data.forEach(item => {
+            
+            applicants.forEach((applicant, index) => {
+                const isSep = sepPos > 0 && index === sepPos - 1;
+                
                 tableHTML += `
-                    <tr>
-                        <td>${i}</td>
-                        <td>${item.id}</td>
-                        <td class="${item.priority === '1' ? 'priority-high' : 'priority-normal'}">${item.priority}</td>
-                        <td>${item.testType}</td>
-                        <td>${item.achievement}</td>
-                        <td>${item.score}</td>
-                        <td><strong>${item.total}</strong></td>
-                        <td>${item.avg}</td>
-                        <td><span class="${item.agreement === 'да' ? 'agreement-yes' : 'agreement-no'}">${item.agreement}</span></td>
+                    <tr${isSep ? ' class="places-separator"' : ''}>
+                        <td>${index + 1}</td>
+                        <td>${applicant.id}</td>
+                        <td class="${applicant.priority === '1' ? 'priority-high' : 'priority-normal'}">${applicant.priority}</td>
+                        <td>${applicant.testType}</td>
+                        <td>${applicant.achievement}</td>
+                        <td>${applicant.score}</td>
+                        <td><strong>${applicant.total}</strong></td>
+                        <td>${applicant.avg}</td>
+                        <td><span class="${applicant.agreement === 'да' ? 'agreement-yes' : 'agreement-no'}">${applicant.agreement}</span></td>
                     </tr>
                 `;
-                i++;
+                
+                // Добавляем метку после сепаратора
+                if (isSep) {
+                    tableHTML += `
+                        <tr>
+                            <td colspan="9">
+                                <div class="places-label">${direction.placesText}</div>
+                            </td>
+                        </tr>
+                    `;
+                }
             });
             
             tableHTML += `
                     </tbody>
                 </table>
-                <div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>
+                <div class="results-info">
+                    Показано: ${applicants.length} из ${direction.applicants.length} записей
+                </div>
             `;
             
             document.getElementById('results').innerHTML = tableHTML;
@@ -599,9 +904,41 @@
             applyFilters();
         }
         
-        // Добавляем функции в глобальную область видимости
+        // Управление чекбоксами приоритетов
+        function toggleAllPriorities(state) {
+            const checkboxes = document.querySelectorAll('#priorityFilters input');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = state;
+            });
+            applyFilters();
+        }
+        
+        // Парсинг HTML из текстового поля
+        function parseHTMLContent() {
+            const html = document.getElementById('htmlInput').value.trim();
+            if (!html) return alert('Вставьте HTML-код таблицы');
+            
+            try {
+                parseHTML(html, 'Вставлено вручную');
+                document.getElementById('htmlInput').value = '';
+                
+                // Переключаемся на вкладку направлений
+                document.querySelector('.tab[data-tab="file"]').click();
+                
+                // Обновляем фильтры
+                applyFilters();
+            } catch (e) {
+                alert('Ошибка обработки HTML: ' + e.message);
+            }
+        }
+        
+        // Экспорт функций в глобальную область видимости
         window.sortBy = sortBy;
         window.applyFilters = applyFilters;
+        window.activateDirection = activateDirection;
+        window.removeDirection = removeDirection;
+        window.parseHTMLContent = parseHTMLContent;
+        window.toggleAllPriorities = toggleAllPriorities;
     </script>
 </body>
 </html>
