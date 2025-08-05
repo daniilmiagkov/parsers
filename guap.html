@@ -2,713 +2,795 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Парсер таблицы рейтинга</title>
+    <title>Парсер рейтинга абитуриентов</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
-        body {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-            color: #212529;
+        
+        body { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f8f9fa; 
+            color: #212529; 
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
             padding: 20px;
-            background: linear-gradient(135deg, #2c3e50, #4a6582);
+            background: linear-gradient(135deg, #2c3e50, #4a6582); 
             color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
         }
-        .upload-section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-            border: 2px dashed #ced4da;
-            text-align: center;
+        
+        .tabs { 
+            display: flex; 
+            border-bottom: 1px solid #dee2e6; 
+            margin-bottom: 15px; 
         }
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            background: #e9ecef;
+        
+        .tab { 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            background: #e9ecef; 
             border: 1px solid #dee2e6;
-            border-bottom: none;
-            border-radius: 5px 5px 0 0;
-            margin-right: 5px;
+            border-bottom: none; 
+            border-radius: 5px 5px 0 0; 
+            margin-right: 5px; 
+            transition: .2s; 
         }
-        .tab.active {
-            background: white;
-            font-weight: bold;
+        
+        .tab.active { 
+            background: white; 
+            font-weight: bold; 
             color: #2c3e50;
-            border-bottom: 1px solid white;
-            margin-bottom: -1px;
+            border-bottom: 1px solid white; 
+            margin-bottom: -1px; 
         }
-        .tab-content {
-            display: none;
-            padding: 20px;
-            background: white;
+        
+        .tab-content { 
+            display: none; 
+            padding: 20px; 
+            background: white; 
             border-radius: 0 5px 5px 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
         }
-        .tab-content.active {
-            display: block;
+        
+        .tab-content.active { 
+            display: block; 
         }
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 15px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-family: Consolas, Monaco, 'Courier New', monospace;
-            font-size: 14px;
-            resize: vertical;
-        }
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin: 20px 0;
-        }
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        .file-input-label {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #4a6582, #2c3e50);
-            color: white;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .file-input-label:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
-        }
-        .file-name {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #4a6582;
-        }
-        button {
-            background: linear-gradient(135deg, #4a6582, #2c3e50);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin: 10px 0;
-        }
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
-        }
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-            background: white;
-            padding: 20px;
+        
+        .upload-section { 
+            background: white; 
+            padding: 25px; 
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+            margin-bottom: 25px;
+            border: 2px dashed #ced4da; 
+            text-align: center; 
         }
-        .filter-group {
-            margin-bottom: 10px;
+        
+        .file-input-label { 
+            display: inline-block; 
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #4a6582, #2c3e50);
+            color: white; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            transition: .3s; 
         }
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
+        
+        .file-input-label:hover { 
+            transform: translateY(-3px); 
         }
-        select, input {
-            width: 100%;
-            padding: 10px 15px;
+        
+        .file-name { 
+            margin-top: 10px; 
+            font-size: .9rem; 
+            color: #4a6582; 
+        }
+        
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            padding: 15px; 
             border: 1px solid #ced4da;
-            border-radius: 5px;
-            background-color: #f8f9fa;
+            border-radius: 5px; 
+            font-family: Consolas, monospace; 
+            font-size: 14px; 
+        }
+        
+        button { 
+            background: linear-gradient(135deg, #4a6582, #2c3e50); 
+            color: white;
+            border: none; 
+            padding: 12px 22px; 
+            border-radius: 30px; 
+            cursor: pointer;
+            font-weight: 600; 
+            margin: 10px 0; 
+            transition: .3s; 
+        }
+        
+        button:hover { 
+            transform: translateY(-3px); 
+        }
+        
+        .filters { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+            gap: 15px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            margin-bottom: 20px; 
+        }
+        
+        .filter-group label, 
+        .filter-group h4 { 
+            font-weight: 600; 
+            color: #2c3e50; 
+        }
+        
+        select,
+        input[type="text"],
+        input[type="number"] {
+            width: 100%; 
+            padding: 10px 15px; 
+            border: 1px solid #ced4da;
+            border-radius: 5px; 
+            background: #f8f9fa; 
             font-size: 1rem;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            background: white;
-            border-radius: 10px;
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: .9rem;
+            background: white; 
+            border-radius: 10px; 
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            margin-top: 20px; 
         }
-        th {
-            background: linear-gradient(135deg, #3d5a80, #2c3e50);
+        
+        th, 
+        td { 
+            padding: 12px 15px; 
+        }
+        
+        th { 
+            background: linear-gradient(135deg, #3d5a80, #2c3e50); 
             color: white;
-            padding: 15px;
-            text-align: left;
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-            font-weight: 600;
+            text-align: left; 
+            cursor: pointer; 
+            position: relative; 
+            user-select: none; 
         }
-        th:hover {
-            background: linear-gradient(135deg, #4a6582, #3d5a80);
+        
+        th::after { 
+            content: "↕"; 
+            position: absolute; 
+            right: 15px; 
+            opacity: .8; 
         }
-        th::after {
-            content: "↕";
-            position: absolute;
-            right: 15px;
-            opacity: 0.8;
+        
+        th.asc::after { 
+            content: "↑"; 
         }
-        th.asc::after {
-            content: "↑";
+        
+        th.desc::after { 
+            content: "↓"; 
         }
-        th.desc::after {
-            content: "↓";
+        
+        tr:nth-child(even) { 
+            background: #f8f9fa; 
         }
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e9ecef;
+        
+        tr:hover { 
+            background: #e9ecef; 
         }
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        tr:hover {
-            background-color: #e9ecef;
-        }
-        .priority-high {
-            background: #e3f2fd;
-            font-weight: bold;
+        
+        .priority-high { 
+            background: #e3f2fd; 
+            font-weight: bold; 
             text-align: center;
-            border-radius: 15px;
-            padding: 3px 10px;
-            color: #0d47a1;
+            border-radius: 15px; 
+            padding: 3px 10px; 
+            color: #0d47a1; 
         }
-        .priority-low {
-            text-align: center;
-            background: #ffebee;
+        
+        .priority-low { 
+            background: #ffebee; 
+            text-align: center; 
             border-radius: 15px;
-            padding: 3px 10px;
-            color: #c62828;
+            padding: 3px 10px; 
+            color: #c62828; 
         }
-        .contract-yes {
-            color: #2e7d32;
+        
+        .contract-yes { 
+            background: #e8f5e9; 
+            color: #2e7d32; 
             font-weight: bold;
-            background: #e8f5e9;
-            border-radius: 15px;
-            padding: 3px 10px;
-            display: inline-block;
+            border-radius: 15px; 
+            padding: 3px 10px; 
+            display: inline-block; 
         }
-        .contract-no {
-            color: #c62828;
+        
+        .contract-no  { 
+            background: #ffebee; 
+            color: #c62828; 
             font-weight: bold;
-            background: #ffebee;
-            border-radius: 15px;
-            padding: 3px 10px;
-            display: inline-block;
+            border-radius: 15px; 
+            padding: 3px 10px; 
+            display: inline-block; 
         }
-        .results-container {
-            background: white;
-            padding: 25px;
+        
+        .results-container { 
+            background: white; 
+            padding: 25px; 
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            min-height: 400px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            min-height: 400px; 
         }
-        .results-info {
-            margin-top: 15px;
-            text-align: center;
+        
+        .results-info { 
+            text-align: center; 
+            margin-top: 15px; 
             font-size: 1rem;
-            color: #4a6582;
-            padding: 10px;
-            background: #e9ecef;
+            color: #4a6582; 
+            padding: 10px; 
+            background: #e9ecef; 
+            border-radius: 8px; 
+        }
+        
+        .no-data { 
+            text-align: center; 
+            padding: 40px; 
+            color: #6c757d; 
+            font-size: 1.2rem; 
+        }
+        
+        .places-separator td { 
+            border-bottom: 4px solid #ff0000; 
+            padding-top: 6px; 
+        }
+        
+        .places-label { 
+            text-align: center; 
+            font-weight: bold; 
+            color: #ff0000; 
+            margin: 4px 0; 
+        }
+        
+        .direction-info { 
+            background: #e8f4ff; 
+            padding: 10px 15px; 
             border-radius: 8px;
+            margin-bottom: 15px; 
+            font-weight: 500; 
         }
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-            font-size: 1.2rem;
+        
+        .direction-name { 
+            font-weight: bold; 
+            color: #1a237e; 
+            font-size: 1.1rem; 
         }
-        .loading {
-            text-align: center;
-            padding: 30px;
+        
+        .remove-direction { 
+            background: #ff6b6b; 
+            color: white; 
+            border: none;
+            border-radius: 50%; 
+            width: 24px; 
+            height: 24px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer; 
+            font-weight: bold; 
+            float: right; 
         }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3d5a80;
+        
+        .direction-tabs { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 5px; 
+            margin-bottom: 20px; 
+        }
+        
+        .direction-tab { 
+            padding: 10px 15px; 
+            background: #e0e7ff; 
+            border-radius: 20px;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            transition: .2s; 
+        }
+        
+        .direction-tab.active { 
+            background: #3d5a80; 
+            color: white; 
+            font-weight: bold; 
+        }
+        
+        .direction-tab-close { 
+            background: #ff6b6b; 
+            color: white; 
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            width: 18px; 
+            height: 18px; 
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            font-size: 12px; 
+            line-height: 1; 
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .instructions {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-        /* Стили для разделителя количества мест */
-        .places-separator {
-            position: relative;
-        }
-        .places-separator::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #ff0000 20%, #ff0000 80%, transparent);
-            z-index: 10;
-        }
-        .places-label {
-            position: absolute;
-            right: 10px;
-            top: -10px;
-            background: #ff0000;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            z-index: 20;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .places-info {
-            background: #fff8f8;
-            border-left: 4px solid #ff0000;
-            padding: 10px 15px;
-            margin: 10px 0;
-            border-radius: 0 4px 4px 0;
+        
+        .program-text {
+            margin-top: 8px;
+            font-style: italic;
+            color: #333;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Парсер таблицы рейтинга абитуриентов</h1>
-        <p>Загрузите HTML-файл или вставьте HTML-код таблицы для анализа</p>
+        <h1>Анализ рейтинга абитуриентов</h1>
+        <p>Загрузите несколько направлений для сравнения</p>
     </div>
 
+    <!-- Вкладки -->
     <div class="tabs">
-        <div class="tab active" data-tab="file">Загрузить файл</div>
+        <div class="tab active" data-tab="file">Загрузить файлы</div>
         <div class="tab" data-tab="html">Вставить HTML</div>
     </div>
 
+    <!-- Контент вкладок -->
     <div class="tab-content active" id="file-tab">
         <div class="upload-section">
-            <h2>Загрузите HTML-файл с таблицей</h2>
-            
-            <div class="file-input-wrapper">
-                <label class="file-input-label">Выбрать файл HTML</label>
-                <input type="file" id="htmlFile" accept=".html">
+            <h2>Загрузите HTML-файлы</h2>
+            <div class="file-input-wrapper" style="position: relative; display: inline-block;">
+                <input
+                    type="file"
+                    id="htmlFiles"
+                    accept=".html"
+                    multiple
+                    style="
+                        position: absolute;
+                        top: 0; 
+                        left: 0;
+                        width: 100%; 
+                        height: 100%;
+                        opacity: 0;
+                        cursor: pointer;
+                    "
+                >
+                <label for="htmlFiles" class="file-input-label">
+                    Выбрать файлы HTML
+                </label>
             </div>
-            <div class="file-name" id="fileName">Файл не выбран</div>
-            
-            <div class="instructions">
-                <h3>Как получить файл:</h3>
-                <p>1. Откройте страницу с таблицей рейтинга</p>
-                <p>2. Нажмите Ctrl+S (Сохранить страницу)</p>
-                <p>3. Выберите "Веб-страница, полностью"</p>
-                <p>4. Загрузите сохраненный HTML-файл</p>
-            </div>
+            <div class="file-name" id="fileName">Файлы не выбраны</div>
         </div>
     </div>
 
     <div class="tab-content" id="html-tab">
         <div class="upload-section">
-            <h2>Вставьте HTML-код таблицы</h2>
-            
+            <h2>Вставьте HTML-код</h2>
             <textarea id="htmlInput" placeholder="Вставьте HTML код таблицы сюда..."></textarea>
             <button onclick="parseHTMLContent()">Обработать HTML</button>
-            
-            <div class="instructions">
-                <h3>Как получить HTML:</h3>
-                <p>1. Откройте страницу с таблицей в браузере</p>
-                <p>2. Кликните правой кнопкой по таблице</p>
-                <p>3. Выберите "Исследовать элемент" (Inspect)</p>
-                <p>4. Скопируйте код таблицы (элемент &lt;table&gt;...&lt;/table&gt;)</p>
-            </div>
         </div>
     </div>
 
+    <div class="direction-tabs" id="directionTabs"></div>
+
+    <!-- Фильтры -->
     <div class="filters">
         <div class="filter-group">
-            <label for="priorityFilter">Приоритет:</label>
-            <select id="priorityFilter">
-                <option value="">Все приоритеты</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-                <option value="11">11</option>
-            </select>
+            <h4>Приоритеты</h4>
+            <div id="priorityFilters" class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" value="1" checked> 1</label>
+                <label class="checkbox-item"><input type="checkbox" value="2" checked> 2</label>
+                <label class="checkbox-item"><input type="checkbox" value="3" checked> 3</label>
+                <label class="checkbox-item"><input type="checkbox" value="4" checked> 4</label>
+                <label class="checkbox-item"><input type="checkbox" value="5" checked> 5</label>
+                <label class="checkbox-item"><input type="checkbox" value="6" checked> 6</label>
+                <label class="checkbox-item"><input type="checkbox" value="7" checked> 7</label>
+                <label class="checkbox-item"><input type="checkbox" value="8" checked> 8</label>
+                <label class="checkbox-item"><input type="checkbox" value="9" checked> 9</label>
+                <label class="checkbox-item"><input type="checkbox" value="10" checked> 10</label>
+                <label class="checkbox-item"><input type="checkbox" value="11" checked> 11</label>
+            </div>
+            <button onclick="toggleAllPriorities(true)">Все</button>
+            <button onclick="toggleAllPriorities(false)">Снять все</button>
         </div>
         
         <div class="filter-group">
-            <label for="contractFilter">Договор:</label>
+            <label>Договор</label>
             <select id="contractFilter">
-                <option value="">Все</option>
-                <option value="Да">Есть договор</option>
-                <option value="Нет">Нет договора</option>
+                <option value="">Любой</option>
+                <option value="Да">Есть</option>
+                <option value="Нет">Нет</option>
             </select>
         </div>
         
         <div class="filter-group">
-            <label for="search">Поиск по коду:</label>
-            <input type="text" id="search" placeholder="Введите код...">
+            <label>Поиск по коду</label>
+            <input type="text" id="search" placeholder="Код…">
         </div>
         
         <div class="filter-group">
-            <label for="scoreFilter">Баллы ВИ (мин):</label>
-            <input type="number" id="scoreFilter" placeholder="Минимальный балл">
+            <label>Мин. балл ВИ</label>
+            <input type="number" id="scoreFilter" placeholder="0">
         </div>
     </div>
-    
+
+    <!-- Результаты -->
     <div class="results-container">
         <div id="results">
-            <p class="no-data">Загрузите данные для просмотра таблицы</p>
+            <p class="no-data">Загрузите данные для просмотра</p>
         </div>
     </div>
 
     <script>
-        // Глобальные переменные
-        let allData = [];
-        let sortColumn = null;
-        let sortDirection = 'asc';
-        let placesCount = 0;
-        let placesText = "";
-        
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            // Переключение вкладок
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
-                });
-            });
-            
-            // Обработчик загрузки файла
-            document.getElementById('htmlFile').addEventListener('change', handleFileUpload);
-            
-            // Настройка фильтров
-            document.getElementById('priorityFilter').addEventListener('change', applyFilters);
-            document.getElementById('contractFilter').addEventListener('change', applyFilters);
-            document.getElementById('search').addEventListener('input', applyFilters);
-            document.getElementById('scoreFilter').addEventListener('input', applyFilters);
+    const directionsData = {};
+    const tabs = document.getElementById('directionTabs');
+    let currentDir = null;
+    let sortCol = null;
+    let sortDir = 'asc';
+
+    // Переключение вкладок
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
         });
+    });
+
+    // Инициализация обработчиков
+    document.getElementById('htmlFiles').onchange = handleFiles;
+    ['contractFilter', 'search', 'scoreFilter'].forEach(id => 
+        document.getElementById(id).oninput = applyFilters
+    );
+    document.getElementById('priorityFilters').addEventListener('change', applyFilters);
+
+    // Обработка файлов
+    function handleFiles(e) {
+        const files = e.target.files;
+        if (!files.length) return;
         
-        // Обработка загрузки файла
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Показать имя файла
-            document.getElementById('fileName').textContent = file.name;
-            
-            // Показать индикатор загрузки
-            document.getElementById('results').innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Обработка файла...</p>
-                </div>
-            `;
-            
-            // Чтение файла
+        document.getElementById('fileName').textContent = `${files.length} файл(ов)`;
+        document.getElementById('results').innerHTML = `<p class="no-data">Обработка…</p>`;
+        
+        let processed = 0;
+        for (const file of files) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = () => {
                 try {
-                    parseHTML(e.target.result);
-                    applyFilters();
-                } catch (error) {
-                    showError(`Ошибка обработки файла: ${error.message}`);
+                    parseHTML(reader.result, file.name);
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    if (++processed === files.length) {
+                        const keys = Object.keys(directionsData);
+                        if (keys.length) activate(keys[0]);
+                        applyFilters();
+                    }
                 }
             };
             reader.readAsText(file);
         }
+    }
+
+    // Парсинг HTML
+    function parseHTML(html, fileName) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const table = doc.querySelector('table');
         
-        // Парсинг HTML-контента
-        function parseHTMLContent() {
-            const htmlInput = document.getElementById('htmlInput').value;
-            if (!htmlInput.trim()) {
-                showError('Пожалуйста, вставьте HTML код таблицы');
-                return;
-            }
-            
-            try {
-                parseHTML(htmlInput);
-                applyFilters();
-            } catch (error) {
-                showError(`Ошибка обработки HTML: ${error.message}`);
+        if (!table) throw 'Таблица не найдена';
+
+        // Поиск информации о направлении
+        let number = 'N/A';
+        let name = fileName;
+        const headers = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6,p'));
+        
+        for (const header of headers) {
+            const text = header.textContent.trim();
+            const match = text.match(/(\d{2}\.\d{2}\.\d{2}(?:\.\d{2})?)[^\n"]*"(.*?)"/);
+            if (match) {
+                number = match[1];
+                name = match[2];
+                break;
             }
         }
-        
-        // Парсинг HTML
-        function parseHTML(htmlContent) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            
-            // Находим таблицу
-            const table = doc.querySelector('table');
-            if (!table) {
-                throw new Error('Не найдена таблица в загруженных данных.');
+
+        // Поиск информации о местах
+        let placesCount = 0;
+        let placesText = 'Не указано';
+        for (const el of doc.querySelectorAll('h1,h2,h3,h4,h5,h6,p')) {
+            const text = el.textContent.trim().toLowerCase();
+            if (text.includes('количество мест')) {
+                placesText = el.textContent.trim();
+                const match = text.match(/(\d+)/);
+                if (match) placesCount = +match[1];
+                break;
             }
+        }
+
+        // Поиск информации об образовательной программе
+        let programText = '';
+        for (const el of doc.querySelectorAll('h1,h2,h3,h4,h5,h6,p')) {
+            const text = el.textContent.trim();
+            if (text.startsWith('Образовательная программа')) {
+                programText = text;
+                break;
+            }
+        }
+
+        // Парсинг заголовков таблицы
+        const tableHeaders = [];
+        table.querySelectorAll('thead th').forEach(th => 
+            tableHeaders.push(th.textContent.trim())
+        );
+
+        if (!tableHeaders.length) throw 'Нет заголовков таблицы';
+
+        // Парсинг данных таблицы
+        const tableData = [];
+        table.querySelectorAll('tbody tr').forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (!cells.length) return;
             
-            allData = [];
-            const headers = [];
-            
-            // Получаем заголовки
-            const headerRow = table.querySelector('thead tr');
-            if (headerRow) {
-                headerRow.querySelectorAll('th').forEach(th => {
-                    headers.push(th.textContent.trim());
-                });
+            const rowData = {};
+            cells.forEach((cell, index) => {
+                if (index < tableHeaders.length) {
+                    rowData[tableHeaders[index]] = cell.textContent.trim();
+                }
+            });
+
+            // Извлечение балла за испытание
+            const testCell = rowData['Баллы за каждое вступительное испытание (в порядке приоритетности)'];
+            if (testCell) {
+                const match = testCell.match(/(\d+)$/);
+                if (match) rowData['Балл за испытание'] = match[1];
+            }
+
+            tableData.push(rowData);
+        });
+
+        if (!tableData.length) throw 'Нет строк данных';
+
+        // Сохранение данных
+        const id = 'dir_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        directionsData[id] = {
+            id,
+            number,
+            name,
+            data: tableData,
+            placesCount,
+            placesText,
+            programText
+        };
+        
+        addTab(id, number, name);
+    }
+
+    // Добавление вкладки направления
+    function addTab(id, num, name) {
+        const tab = document.createElement('div');
+        tab.className = 'direction-tab';
+        tab.innerHTML = `
+            <span>${num} – ${name}</span>
+            <div class="direction-tab-close" onclick="removeDir('${id}', event)">×</div>
+        `;
+        tab.onclick = () => activate(id);
+        tabs.appendChild(tab);
+        
+        if (!currentDir) activate(id);
+    }
+
+    // Активация вкладки
+    function activate(id) {
+        currentDir = id;
+        document.querySelectorAll('.direction-tab').forEach(tab => 
+            tab.classList.toggle('active', tab.dataset.id === id)
+        );
+        applyFilters();
+    }
+
+    // Удаление направления
+    function removeDir(id, e) {
+        if (e) e.stopPropagation();
+        delete directionsData[id];
+        
+        const tab = document.querySelector(`.direction-tab[data-id="${id}"]`);
+        if (tab) tab.remove();
+        
+        if (currentDir === id) {
+            const keys = Object.keys(directionsData);
+            if (keys.length) {
+                activate(keys[0]);
             } else {
-                throw new Error('Не найдена строка с заголовками таблицы.');
+                document.getElementById('results').innerHTML = '<p class="no-data">Данных нет</p>';
+                currentDir = null;
             }
-            
-            // Поиск информации о количестве мест
-            placesCount = 0;
-            placesText = "";
-            const placesElements = doc.querySelectorAll('h3');
-            for (const element of placesElements) {
-                
-                const text = element.textContent.toLowerCase();
-                if (text.includes('количество мест')) {
-                    placesText = element.textContent.trim();
-                    
-                    // Извлекаем число из текста
-                    const match = placesText.match(/\d+/);
-                    if (match) {
-                        placesCount = parseInt(match[0]);
-                    }
-                    break;
-                }
-            }
-            
-            // Обрабатываем строки данных
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const rowData = {};
-                const cells = row.querySelectorAll('td');
-                
-                cells.forEach((cell, index) => {
-                    if (index < headers.length) {
-                        rowData[headers[index]] = cell.textContent.trim();
-                    }
-                });
-                
-                // Обработка колонки с баллами
-                if (headers.includes('Баллы за каждое вступительное испытание (в порядке приоритетности)')) {
-                    const testInfo = rowData['Баллы за каждое вступительное испытание (в порядке приоритетности)'];
-                    if (testInfo) {
-                        const matches = testInfo.match(/(\d+)$/);
-                        if (matches) {
-                            rowData['Балл за испытание'] = matches[1];
-                        }
-                    }
-                }
-                
-                allData.push(rowData);
-            });
-            
-            if (allData.length === 0) {
-                throw new Error('Не удалось извлечь данные из таблицы.');
-            }
-            
-            // Обновляем интерфейс
-            applyFilters();
+        }
+    }
+
+    // Применение фильтров
+    function applyFilters() {
+        if (!currentDir) {
+            document.getElementById('results').innerHTML = '<p class="no-data">Выберите направление</p>';
+            return;
         }
         
-        // Применение фильтров и сортировки
-        function applyFilters() {
-            if (allData.length === 0) return;
+        const direction = directionsData[currentDir];
+        let data = direction.data.slice();
+
+        // Получение значений фильтров
+        const contractFilter = document.getElementById('contractFilter').value;
+        const searchTerm = document.getElementById('search').value.trim().toLowerCase();
+        const minScore = +document.getElementById('scoreFilter').value || 0;
+        const priorities = Array.from(
+            document.querySelectorAll('#priorityFilters input:checked')
+        ).map(input => input.value);
+
+        // Фильтрация данных
+        data = data.filter(item => {
+            const priorityMatch = priorities.length === 0 || 
+                                 priorities.includes(item['Приоритет']);
             
-            // Получаем значения фильтров
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            const contractFilter = document.getElementById('contractFilter').value;
-            const searchTerm = document.getElementById('search').value.toLowerCase();
-            const minScore = parseInt(document.getElementById('scoreFilter').value) || 0;
+            const contractMatch = !contractFilter || 
+                                  item['Наличие заключенного договора'] === contractFilter;
             
-            // Фильтрация данных
-            let filteredData = allData.filter(item => {
-                const matchesPriority = !priorityFilter || item['Приоритет'] === priorityFilter;
-                const matchesContract = !contractFilter || item['Наличие заключенного договора'] === contractFilter;
-                const matchesSearch = !searchTerm || 
-                    (item['Уникальный код поступающего'] && 
-                     item['Уникальный код поступающего'].toLowerCase().includes(searchTerm));
-                const matchesScore = minScore === 0 || 
-                    (item['Сумма баллов ВИ'] && parseInt(item['Сумма баллов ВИ']) >= minScore) ||
-                    (item['Балл за испытание'] && parseInt(item['Балл за испытание']) >= minScore);
+            const codeMatch = !searchTerm || 
+                             (item['Уникальный код поступающего'] || '')
+                             .toLowerCase().includes(searchTerm);
+            
+            const scoreMatch = minScore === 0 || 
+                              (+item['Сумма баллов ВИ'] >= minScore) || 
+                              (+item['Балл за испытание'] >= minScore);
+            
+            return priorityMatch && contractMatch && codeMatch && scoreMatch;
+        });
+
+        // Сортировка данных
+        if (sortCol) {
+            data.sort((a, b) => {
+                const valA = a[sortCol];
+                const valB = b[sortCol];
                 
-                return matchesPriority && matchesContract && matchesSearch && matchesScore;
+                const numericColumns = [
+                    'п/п', 
+                    'Приоритет', 
+                    'Сумма конкурсных баллов',
+                    'Сумма баллов ВИ', 
+                    'Балл за испытание'
+                ];
+                
+                if (numericColumns.includes(sortCol)) {
+                    const numA = +valA || 0;
+                    const numB = +valB || 0;
+                    return sortDir === 'asc' ? numA - numB : numB - numA;
+                }
+                
+                return sortDir === 'asc' 
+                    ? valA.localeCompare(valB) 
+                    : valB.localeCompare(valA);
             });
-            
-            // Сортировка
-            if (sortColumn) {
-                filteredData.sort((a, b) => {
-                    let valA = a[sortColumn];
-                    let valB = b[sortColumn];
-                    
-                    // Для числовых полей
-                    if (['п/п', 'Приоритет', 'Сумма конкурсных баллов', 'Сумма баллов ВИ', 
-                         'Баллы за достижения', 'Балл за испытание'].includes(sortColumn)) {
-                        valA = parseFloat(valA) || 0;
-                        valB = parseFloat(valB) || 0;
-                        return sortDirection === 'asc' ? valA - valB : valB - valA;
-                    }
-                    
-                    // Для текстовых полей
-                    return sortDirection === 'asc' 
-                        ? valA.localeCompare(valB) 
-                        : valB.localeCompare(valA);
-                });
-            }
-            
-            // Рендерим результаты
-            renderResults(filteredData);
+        }
+
+        render(data, direction);
+    }
+
+    // Рендеринг результатов
+    function render(data, dir) {
+        if (!data.length) {
+            document.getElementById('results').innerHTML = '<p class="no-data">Нет записей</p>';
+            return;
         }
         
-        // Рендеринг таблицы с результатами
-        function renderResults(data) {
-            if (data.length === 0) {
-                document.getElementById('results').innerHTML = '<p class="no-data">Нет данных, соответствующих фильтрам</p>';
-                return;
-            }
-            
-            let tableHTML = `
-                <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th onclick="sortBy('п/п')">№</th>
-                            <th onclick="sortBy('Уникальный код поступающего')">Код</th>
-                            <th onclick="sortBy('Приоритет')">Приоритет</th>
-                            <th onclick="sortBy('Сумма конкурсных баллов')">Сумма баллов</th>
-                            <th onclick="sortBy('Сумма баллов ВИ')">Баллы ВИ</th>
-                            <th onclick="sortBy('Баллы за достижения')">Достижения</th>
-                            <th>Вступительное испытание</th>
-                            <th onclick="sortBy('Наличие заключенного договора')">Договор</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        const sepPos = Math.min(dir.placesCount || 0, data.length);
+        const directionInfo = `
+            <div class="direction-info">
+                <span class="direction-name">${dir.number} – ${dir.name}</span>
+                <button class="remove-direction" onclick="removeDir('${dir.id}')">×</button>
+                <div style="clear:both"></div>
+                <div>${dir.placesText}</div>
+                ${dir.programText ? `<div class="program-text">${dir.programText}</div>` : ''}
+            </div>
+        `;
+
+        let tableContent = '';
+        data.forEach((item, index) => {
+            const isSeparator = sepPos > 0 && index === sepPos - 1;
+            const priorityClass = +item['Приоритет'] <= 3 ? 'priority-high' : 'priority-low';
+            const contractClass = item['Наличие заключенного договора'] === 'Да' 
+                ? 'contract-yes' 
+                : 'contract-no';
+            const contractValue = item['Наличие заключенного договора'] || '';
+
+            tableContent += `
+                <tr${isSeparator ? ' class="places-separator"' : ''}>
+                    <td>${item['п/п'] || ''}</td>
+                    <td>${item['Уникальный код поступающего'] || ''}</td>
+                    <td class="${priorityClass}">${item['Приоритет'] || ''}</td>
+                    <td>${item['Сумма конкурсных баллов'] || ''}</td>
+                    <td>${item['Сумма баллов ВИ'] || ''}</td>
+                    <td>${item['Баллы за достижения'] || ''}</td>
+                    <td>${item['Балл за испытание'] ? `Балл: ${item['Балл за испытание']}` : ''}</td>
+                    <td>
+                        <span class="${contractClass}">${contractValue}</span>
+                    </td>
+                </tr>
             `;
-            
-            // Определяем позицию для разделителя
-            const separatorPosition = Math.min(placesCount, data.length);
-            
-            data.forEach((item, index) => {
-                const priority = item['Приоритет'] || '';
-                const contract = item['Наличие заключенного договора'] || '';
-                const testScore = item['Балл за испытание'] || '';
-                const rowNumber = item['п/п'] || '';
-                
-                // Добавляем разделитель количества мест
-                const isSeparatorRow = index === separatorPosition - 1;
-                
-                tableHTML += `
-                    <tr ${isSeparatorRow ? 'class="places-separator"' : ''}>
-                        <td>${rowNumber}</td>
-                        <td>${item['Уникальный код поступающего'] || ''}</td>
-                        <td class="${priority <= 3 ? 'priority-high' : 'priority-low'}">${priority}</td>
-                        <td>${item['Сумма конкурсных баллов'] || ''}</td>
-                        <td>${item['Сумма баллов ВИ'] || ''}</td>
-                        <td>${item['Баллы за достижения'] || ''}</td>
-                        <td>${testScore ? `Балл: ${testScore}` : ''}</td>
-                        <td><span class="${contract === 'Да' ? 'contract-yes' : 'contract-no'}">${contract}</span></td>
+
+            if (isSeparator) {
+                tableContent += `
+                    <tr>
+                        <td colspan="8">
+                            <div class="places-label">${dir.placesText}</div>
+                        </td>
                     </tr>
                 `;
-                
-                // Добавляем метку количества мест
-                if (isSeparatorRow) {
-                    tableHTML += `
-                        <tr>
-                            <td colspan="8" style="position: relative; height: 10px;">
-                                <div class="places-label">${placesText || `Количество мест: ${placesCount}`}</div>
-                            </td>
-                        </tr>
-                    `;
-                }
-            });
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-                </div>
-            `;
-            
-            // Добавляем информацию о количестве мест
-            let infoHTML = '';
-            if (placesText) {
-                infoHTML = `<div class="places-info"><strong>Обнаружено:</strong> ${placesText}</div>`;
             }
-            
-            infoHTML += `<div class="results-info">Показано: ${data.length} из ${allData.length} записей</div>`;
-            
-            document.getElementById('results').innerHTML = tableHTML + infoHTML;
+        });
+
+        const resultsHTML = `
+            ${directionInfo}
+            <table>
+                <thead>
+                    <tr>
+                        <th onclick="sortBy('п/п')">№</th>
+                        <th onclick="sortBy('Уникальный код поступающего')">Код</th>
+                        <th onclick="sortBy('Приоритет')">Приоритет</th>
+                        <th onclick="sortBy('Сумма конкурсных баллов')">Сумма</th>
+                        <th onclick="sortBy('Сумма баллов ВИ')">Баллы ВИ</th>
+                        <th onclick="sortBy('Баллы за достижения')">Достижения</th>
+                        <th>Испытание</th>
+                        <th onclick="sortBy('Наличие заключенного договора')">Договор</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableContent}
+                </tbody>
+            </table>
+            <div class="results-info">
+                Показано ${data.length} из ${dir.data.length} записей
+            </div>
+        `;
+
+        document.getElementById('results').innerHTML = resultsHTML;
+    }
+
+    // Сортировка по столбцу
+    function sortBy(column) {
+        if (sortCol === column) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortCol = column;
+            sortDir = 'asc';
         }
-        
-        // Сортировка по колонке
-        function sortBy(column) {
-            // Если уже сортировали по этой колонке - меняем направление
-            if (sortColumn === column) {
-                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortColumn = column;
-                sortDirection = 'asc';
-            }
-            
-            // Обновляем данные
-            applyFilters();
-        }
-        
-        // Показать ошибку
-        function showError(message) {
-            document.getElementById('results').innerHTML = `
-                <div style="color: #c62828; text-align: center; padding: 30px;">
-                    <h3>Ошибка</h3>
-                    <p>${message}</p>
-                </div>
-            `;
-        }
-        
-        // Добавляем функции в глобальную область видимости
-        window.sortBy = sortBy;
-        window.parseHTMLContent = parseHTMLContent;
-        window.applyFilters = applyFilters;
+        applyFilters();
+    }
+
+    // Управление приоритетами
+    function toggleAllPriorities(state) {
+        document.querySelectorAll('#priorityFilters input').forEach(checkbox => {
+            checkbox.checked = state;
+        });
+        applyFilters();
+    }
     </script>
 </body>
 </html>
